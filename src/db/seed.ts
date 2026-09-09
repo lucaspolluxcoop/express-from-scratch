@@ -51,7 +51,7 @@ const seed = async () => {
         userId: testUser.id,
         name: 'exercise',
         description: 'Daily Workout',
-        frecuency: 'daily',
+        frequency: 'daily',
         targetCount: 1,
       })
       .returning()
