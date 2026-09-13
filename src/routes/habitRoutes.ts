@@ -2,7 +2,7 @@ import { Router, type Request, type Response } from 'express'
 import { validateBody, validateParams } from '../middleware/validation.ts'
 import { z, type ZodType } from 'zod'
 import { authenticateToken } from '../middleware/auth.ts'
-import { createHabit, getUserHabits } from '../controllers/habitController.ts'
+import { createHabit, getUserHabits, updateHabit } from '../controllers/habitController.ts'
 
 const createHabitSchema: ZodType = z.object({
   name: z.string(),
@@ -28,6 +28,8 @@ router.get('/:id', (req: Request, res: Response) => {
 
 router.post('/', validateBody(createHabitSchema), createHabit,
 )
+
+router.patch('/:id', updateHabit)
 
 router.delete('/:id', (req: Request, res: Response) => {
   res.status(204).json({ message: 'deleted habit' })

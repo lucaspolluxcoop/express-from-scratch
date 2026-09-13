@@ -69,24 +69,68 @@ export const getUserHabits = async (
       with: {
         habitTags: {
           with: {
-            tag: true
-          }
-        }
+            tag: true,
+          },
+        },
       },
-      orderBy: [desc(habits.createdAt)]
+      orderBy: [desc(habits.createdAt)],
     })
 
-    const habitsWithTags = userHabitsWithTags.map(habit => ({
+    const habitsWithTags = userHabitsWithTags.map((habit) => ({
       ...habit,
       tags: habit.habitTags.map((ht) => ht.tag),
-      habitTags: undefined
+      habitTags: undefined,
     }))
 
     return res.json({
-      habits: habitsWithTags
+      habits: habitsWithTags,
     })
   } catch (e) {
     console.error('Gets habits error', e)
     return res.status(500).json({ error: 'Failed to fetch habits' })
+  }
+}
+
+export const updateHabit = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    if (!req.user) return res.status(401).json({ error: 'Unauthorized' })
+    const userId = req.user.id
+    const [id] = req.params.id
+    const { tagIds, ...updates } = req.body
+
+    const result = db.transaction(async (tx) => {
+      const [updateHabit] = await tx
+        .update(habits)
+        .set({ ...updates, updatedAt: new Date() })
+        .where(and(eq(habits.id, id), eq(habits.userId, userId)))
+        .returning()
+
+      if (!updateHabit) {
+        return res.status(401).end()
+      }
+
+      if (tagIds !== undefined) {
+        await tx.delete(habitTags).where(eq(habitTags.habitId, id))
+
+        if (tagIds.length > 0) {
+          const habitTagsValues = tagIds.map((tagId: string) => ({
+            habitId: id,
+            tagId,
+          }))
+
+          await tx.insert(habitTags).values(habitTagsValues)
+        }
+      }
+
+      return updateHabit
+    })
+
+    res.json({
+      message: 'habit updated',
+      habit: result
+    })
+  } catch (e) {
+    console.error('Update habits error', e)
+    return res.status(500).json({ error: 'Failed to update habits' })
   }
 }
