@@ -22,10 +22,11 @@ export const validateBody = (schema: ZodType) => {
   }
 }
 
-export const validateParams = (schema: ZodType) => {
+export const validateParams = <T extends Request['params']>(schema: ZodType<T>) => {
   return (req: Request, res: Response, next: NextFunction) => {
     try {
-      schema.parse(req.params)
+      const currentParams = schema.parse(req.params)
+      req.params = currentParams
       next()
     } catch (e) {
       if (e instanceof ZodError) {

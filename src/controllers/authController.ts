@@ -74,10 +74,10 @@ export const login = async (req: Request, res: Response) => {
         lastName: user.lastName,
         createdAt: user.createdAt,
       },
-      token
+      token,
     })
   } catch (e) {
     console.error('Loggin error', e)
-    res.status(500).json({ error: 'Failed to login'})
+    res.status(500).json({ error: 'Failed to login' })
   }
 }

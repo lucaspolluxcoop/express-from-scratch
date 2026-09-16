@@ -3,6 +3,8 @@ import type { AuthenticatedRequest } from '../middleware/auth.ts'
 import db from '../db/connection.ts'
 import { habits, entries, habitTags, tags } from '../db/schema.ts'
 import { eq, and, desc, inArray } from 'drizzle-orm'
+import type { completeParamsSchema } from '../validations/habitValidations.ts'
+import { z } from 'zod'
 
 export const createHabit = async (req: AuthenticatedRequest, res: Response) => {
   try {
@@ -91,11 +93,38 @@ export const getUserHabits = async (
   }
 }
 
-export const updateHabit = async (req: AuthenticatedRequest, res: Response) => {
+export const getUserHabit = async (
+  req: AuthenticatedRequest<z.infer<typeof completeParamsSchema>>,
+  res: Response,
+) => {
+  try {
+    if (!req.user) return res.status(401).json({ error: 'unauthorized' })
+    const userId = req.user.id
+
+    const id = req.params.id
+    const habit = await db.query.habits.findFirst({
+      where: and(eq(habits.id, id), eq(habits.userId, userId)),
+    })
+
+    if (!habit) {
+      return res.status(400).json({ message: 'habit not found' })
+    }
+
+    return res.json({ message: 'Exito', habit })
+  } catch (e) {
+    console.error('get habit error', e)
+    return res.status(500).json({ error: 'Failed to fetch habit' })
+  }
+}
+
+export const updateHabit = async (
+  req: AuthenticatedRequest<z.infer<typeof completeParamsSchema>>,
+  res: Response,
+) => {
   try {
     if (!req.user) return res.status(401).json({ error: 'Unauthorized' })
     const userId = req.user.id
-    const [id] = req.params.id
+    const id = req.params.id
     const { tagIds, ...updates } = req.body
 
     const result = db.transaction(async (tx) => {
@@ -127,10 +156,34 @@ export const updateHabit = async (req: AuthenticatedRequest, res: Response) => {
 
     res.json({
       message: 'habit updated',
-      habit: result
+      habit: result,
     })
   } catch (e) {
-    console.error('Update habits error', e)
-    return res.status(500).json({ error: 'Failed to update habits' })
+    console.error('Update habit error', e)
+    return res.status(500).json({ error: 'Failed to update habit' })
+  }
+}
+
+export const deleteHabit = async (
+  req: AuthenticatedRequest<z.infer<typeof completeParamsSchema>>,
+  res: Response,
+) => {
+  try {
+    if (!req.user) return res.status(401).json({ message: 'unauthorized' })
+    const userId = req.user.id
+    const id = req.params.id
+
+    const habit = await db.query.habits.findFirst({
+      where: and(eq(habits.id, id), eq(habits.userId, userId)),
+    })
+
+    if (!habit) return res.status(400).json({ message: 'Habit not found' })
+
+    await db.delete(habits).where(eq(habits.id, habit.id))
+
+    return res.status(204).json({ message: 'Habit deleted' })
+  } catch (e) {
+    console.error('Delete habits error', e)
+    return res.status(500).json({ error: 'Failed to delete habit' })
   }
 }
