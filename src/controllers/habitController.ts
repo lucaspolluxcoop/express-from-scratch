@@ -127,7 +127,7 @@ export const updateHabit = async (
     const id = req.params.id
     const { tagIds, ...updates } = req.body
 
-    const result = db.transaction(async (tx) => {
+    const result = await db.transaction(async (tx) => {
       const [updateHabit] = await tx
         .update(habits)
         .set({ ...updates, updatedAt: new Date() })
