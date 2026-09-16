@@ -173,15 +173,14 @@ export const deleteHabit = async (
     const userId = req.user.id
     const id = req.params.id
 
-    const habit = await db.query.habits.findFirst({
-      where: and(eq(habits.id, id), eq(habits.userId, userId)),
-    })
+    const [deletedHabit] = await db
+      .delete(habits)
+      .where(and(eq(habits.id, id), eq(habits.userId, userId)))
+      .returning()
 
-    if (!habit) return res.status(400).json({ message: 'Habit not found' })
+    if (!deletedHabit) return res.status(400).json({ message: 'Habit not found' })
 
-    await db.delete(habits).where(eq(habits.id, habit.id))
-
-    return res.status(204).json({ message: 'Habit deleted' })
+    return res.status(204).end()
   } catch (e) {
     console.error('Delete habits error', e)
     return res.status(500).json({ error: 'Failed to delete habit' })
