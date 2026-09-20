@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "node --watch src/index.ts",
     "start": "node src/index.ts",
-    "test": "vitest run",
+    "test": "cross-env APP_STAGE=test vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "db:generate": "drizzle-kit generate",
@@ -30,6 +30,7 @@
   "dependencies": {
     "bcrypt": "^6.0.0",
     "cors": "^2.8.6",
+    "cross-env": "^10.1.0",
     "custom-env": "^2.0.6",
     "drizzle-orm": "^0.45.2",
     "drizzle-zod": "^0.8.3",
@@ -39,12 +40,14 @@
     "morgan": "^1.12.0",
     "pg": "^8.23.0",
     "postgres": "^3.4.9",
+    "vitest": "^5.0.1",
     "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
+    "@types/jest": "^30.0.0",
     "@types/morgan": "^1.9.10",
     "@types/node": "^26.4.0",
     "@types/pg": "^8.23.1",
