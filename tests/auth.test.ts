@@ -1,7 +1,7 @@
 import request from 'supertest'
 import app from '../src/server.ts'
 import env from '../env.ts'
-import { cleanupDatabase, createTestHabit, createTestUser} from './setup/dbHelpers.ts'
+import { cleanupDatabase, createTestUser} from './setup/dbHelpers.ts'
 
 describe('Authentication Endpoints', () => {
   afterEach(async () => {

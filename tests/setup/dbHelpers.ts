@@ -30,7 +30,7 @@ export const createTestUser = async (userData: Partial<NewUser> = {}) => {
     })
     .returning()
 
-  const token = generateToken({
+  const token = await generateToken({
     id: user.id,
     email: user.email,
     username: user.username,
